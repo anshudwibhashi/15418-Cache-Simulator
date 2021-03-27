@@ -1,4 +1,5 @@
 #pragma once
+
 class BusResponse{
     public:
         typedef enum {SHARED, FLUSH_MODIFIED_TO_SHARED,FLUSH_MODIFIED_TO_INVALID, EXCLUSIVE, OWNED, MODIFIED, NONE} SnoopResult;	

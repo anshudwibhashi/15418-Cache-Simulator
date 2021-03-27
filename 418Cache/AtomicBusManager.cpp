@@ -4,6 +4,7 @@
 #include "vector"
 #include "CacheJob.h"
 #include "BusRequest.h"
+#include "BusResponse.h"
 
 AtomicBusManager::AtomicBusManager(CacheConstants consts, std::vector<Cache*>* allCaches, CacheStats* statTracker, int propagationDelay)
 {
@@ -70,9 +71,9 @@ void AtomicBusManager::tick(){
 	for(int i = 0; i < 2; i++){
 		if(i != currentCache){
 			// Add the busResponse 
-			Cache::SnoopResult result = (*caches.at(i)).snoopBusRequest(currentRequest);
+			BusResponse::SnoopResult result = (*caches.at(i)).snoopBusRequest(currentRequest);
 			if(constants.getProtocol() == CacheConstants::MSI){
-				if (result == Cache::FLUSH_MODIFIED_TO_SHARED || result == Cache::FLUSH_MODIFIED_TO_INVALID)
+				if (result == BusResponse::FLUSH_MODIFIED_TO_SHARED || result == BusResponse::FLUSH_MODIFIED_TO_INVALID)
 				{
 					//flush to memory, then load from memory
 					endCycle += constants.getMemoryResponseCycleCost();
@@ -82,17 +83,17 @@ void AtomicBusManager::tick(){
 					printf("num mem use ++ \n");
 					continue;
 				}
-				if (result == Cache::SHARED){
+				if (result == BusResponse::SHARED){
 					//do nothing, no sharing in MSI
 					continue;
 				}
-				if (result == Cache::NONE){
+				if (result == BusResponse::NONE){
 					//Do nothing
 					continue;
 				}
 			}
 			if(constants.getProtocol() == CacheConstants::MOESI){
-				if(result == Cache::MODIFIED || result == Cache::EXCLUSIVE || result == Cache::OWNED){
+				if(result == BusResponse::MODIFIED || result == BusResponse::EXCLUSIVE || result == BusResponse::OWNED){
 					//so adjust the cycle cost to a share
 					//but don't adjust cost if it was an upgrade from owned to modified, cause that's bad
 					if((*currentRequest).getCycleCost() == constants.getCacheHitCycleCost()){
@@ -109,7 +110,7 @@ void AtomicBusManager::tick(){
 			}
 
 			if(constants.getProtocol() == CacheConstants::MESI){
-				if(result == Cache::FLUSH_MODIFIED_TO_INVALID){
+				if(result == BusResponse::FLUSH_MODIFIED_TO_INVALID){
 					endCycle += propagationDelay;
 					(*caches[currentCache]).updateEndCycleTime(propagationDelay);
 					isShared = true;
@@ -119,7 +120,7 @@ void AtomicBusManager::tick(){
 					printf("num main mem use ++ \n");
 					continue;
 				}
-				if(result == Cache::FLUSH_MODIFIED_TO_SHARED){
+				if(result == BusResponse::FLUSH_MODIFIED_TO_SHARED){
 					//so this happens when there is a busrd req
 					endCycle += propagationDelay;
 					(*caches[currentCache]).updateEndCycleTime(propagationDelay);
@@ -129,7 +130,7 @@ void AtomicBusManager::tick(){
 					printf("num main mem use ++ \n");
 					continue;
 				}
-				if(result == Cache::SHARED){
+				if(result == BusResponse::SHARED){
 					if(!foundShared){
 						endCycle -= (constants.getMemoryResponseCycleCost() - propagationDelay);
 						(*caches[currentCache]).newEndCycleTime(propagationDelay);
@@ -138,7 +139,7 @@ void AtomicBusManager::tick(){
 					isShared = true;
 					continue;
 				}
-				if(result == Cache::NONE){
+				if(result == BusResponse::NONE){
 					//nothing
 					continue;
 				}

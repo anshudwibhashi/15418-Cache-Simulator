@@ -9,7 +9,7 @@ BusResponse::BusResponse(SnoopResult result, unsigned long long ordtime, int sen
 unsigned long long BusResponse::getOrdTime(){
     return ordTime;
 }
-  
+
 int BusResponse::getSenderId(){
     return senderId;
 }

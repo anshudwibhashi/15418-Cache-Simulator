@@ -309,26 +309,26 @@ BusRequest* Cache::getBusRequest(){
 	return busRequest;
 }
 
-Cache::SnoopResult Cache::handleBusRdShared(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdShared(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	printf("cache number %d just changed set %d and tag %d at address %llx to from shared to shared from a read at cycle %llu \n", 		processorId, setNum, tagNum, (*request).address, cacheConstants.getCycle());
-	return Cache::SHARED;
+	return BusResponse::SHARED;
 }
 
-Cache::SnoopResult Cache::handleBusRdModified(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdModified(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	//FLUSH LINE TO MEMORY and set the state to Shared
 	(*stats).numFlush++;
 	printf("cache %d just FLUSH set %d and tag %d for address %llx \n", processorId, setNum, tagNum, (*request).address);
 	(*tempLine).setState(CacheLine::shared);
 	printf("cache number %d just changed set %d and tag %d for address %llx from modified to shared from a read at cycle %llu \n",		processorId, setNum, tagNum, (*request).address, cacheConstants.getCycle());
-	return 	Cache::FLUSH_MODIFIED_TO_SHARED;
+	return 	BusResponse::FLUSH_MODIFIED_TO_SHARED;
 }
 
-Cache::SnoopResult Cache::handleBusRdInvalid(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdInvalid(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	printf("cache number %d does not have set %d and tag %d for address %llx in its cache, ignoring snoop at cycle %llu \n",		processorId, setNum, tagNum, (*request).address, cacheConstants.getCycle());
-	return Cache::NONE;
+	return BusResponse::NONE;
 }
 
-Cache::SnoopResult Cache::handleBusRdMESI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdMESI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	if((*tempLine).getState() == CacheLine::shared){
 		return handleBusRdShared(request, setNum, tagNum, tempLine);
 	}
@@ -339,35 +339,35 @@ Cache::SnoopResult Cache::handleBusRdMESI(BusRequest* request, int setNum, int t
 		//so no need to flush, but now we're not exclusive
 		(*tempLine).setState(CacheLine::shared);
 		printf("cache number %d just changed set %d and tag %d for address %llx from exclusive to shared from a read at cycle %llu \n",			processorId, setNum, tagNum, (*request).address, cacheConstants.getCycle());
-		return Cache::SHARED;
+		return BusResponse::SHARED;
 	}
 	else{
 		return handleBusRdInvalid(request, setNum, tagNum, tempLine);
 	}
 }
 
-Cache::SnoopResult Cache::handleBusRdXInvalid(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdXInvalid(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	printf("cache number %d does not have set %d and tag %d for address %llx in its cache, ignoring snoop at cycle %llu \n",		processorId, setNum, tagNum, (*request).address, cacheConstants.getCycle());
-	return Cache::NONE;
+	return BusResponse::NONE;
 }
 
-Cache::SnoopResult Cache::handleBusRdXModified(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdXModified(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	//FLUSH LINE TO MEMORY and set the state to invalid
 	(*stats).numFlush++;
 	printf("cache %d just FLUSH set %d and tag %d \n", processorId, setNum, tagNum);
 	(*tempLine).setState(CacheLine::invalid);
 	printf("cache number %d just changed set %d and tag %d for address %llx from modified to invalid from a ReadX at cycle %llu \n",		processorId, setNum, tagNum, (*request).address, cacheConstants.getCycle());
-	return FLUSH_MODIFIED_TO_INVALID;
+	return BusResponse::FLUSH_MODIFIED_TO_INVALID;
 }
 
-Cache::SnoopResult Cache::handleBusRdXSharedExclusive(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdXSharedExclusive(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	//invalidate ours
 	(*tempLine).setState(CacheLine::invalid);
 	printf("cache number %d just changed set %d and tag %d for address %llx from shared (or exclusive) to invalid from a ReadX at cycle %llu \n",		processorId, setNum, tagNum, (*request).address, cacheConstants.getCycle());
-	return Cache::SHARED;
+	return BusResponse::SHARED;
 }
 
-Cache::SnoopResult Cache::handleBusRdXMESI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdXMESI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	if((*tempLine).getState() == CacheLine::shared || (*tempLine).getState() == CacheLine::exclusive){
 		return handleBusRdXSharedExclusive(request, setNum, tagNum, tempLine);
 	}
@@ -379,17 +379,18 @@ Cache::SnoopResult Cache::handleBusRdXMESI(BusRequest* request, int setNum, int 
 	}
 }
 
-Cache::SnoopResult Cache::handleSnoopMESI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
-	Cache::SnoopResult result = Cache::NONE;
+BusResponse::SnoopResult Cache::handleSnoopMESI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+	BusResponse::SnoopResult result = BusResponse::NONE;
 	if((*request).getCommand() == BusRequest::BusRd){
 		return handleBusRdMESI(request, setNum, tagNum, tempLine);
 	}
 	if((*request).getCommand() == BusRequest::BusRdX){
 		return handleBusRdXMESI(request, setNum, tagNum, tempLine);
 	}
+	return result;
 }
 
-Cache::SnoopResult Cache::handleBusRdXMSI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdXMSI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	if((*tempLine).getState() == CacheLine::shared){
 		return handleBusRdXSharedExclusive(request, setNum, tagNum, tempLine);
 	}
@@ -400,7 +401,7 @@ Cache::SnoopResult Cache::handleBusRdXMSI(BusRequest* request, int setNum, int t
 		return handleBusRdXInvalid(request, setNum, tagNum, tempLine);
 	}
 }
-Cache::SnoopResult Cache::handleBusRdMSI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleBusRdMSI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
 	if((*tempLine).getState() == CacheLine::shared){
 		return handleBusRdShared(request, setNum, tagNum, tempLine);
 	}
@@ -412,7 +413,8 @@ Cache::SnoopResult Cache::handleBusRdMSI(BusRequest* request, int setNum, int ta
 	}
 }
 
-Cache::SnoopResult Cache::handleSnoopMSI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+BusResponse::SnoopResult Cache::handleSnoopMSI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+	BusResponse::SnoopResult result = BusResponse::NONE;
 	if((*request).getCommand() == BusRequest::BusRd){
 		return handleBusRdMSI(request, setNum, tagNum, tempLine);
 	}
@@ -420,15 +422,16 @@ Cache::SnoopResult Cache::handleSnoopMSI(BusRequest* request, int setNum, int ta
 	{
 		return handleBusRdXMSI(request, setNum, tagNum, tempLine);
 	}
+	return result;
 }
 
-Cache::SnoopResult Cache::handleSnoopMOESI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
-	Cache::SnoopResult result = Cache::NONE;
+BusResponse::SnoopResult Cache::handleSnoopMOESI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
+	BusResponse::SnoopResult result = BusResponse::NONE;
 	if((*request).getCommand() == BusRequest::BusRd){
 		if((*tempLine).getState() == CacheLine::owned){
 			//if we have it in owned, we are the one who responds with data
 			//no memory use, cacheshare++, miss++
-			result = Cache::OWNED;
+			result = BusResponse::OWNED;
 			(*stats).numCacheShare++;
 			return result;
 		} else if((*tempLine).getState() == CacheLine::modified){
@@ -436,17 +439,17 @@ Cache::SnoopResult Cache::handleSnoopMOESI(BusRequest* request, int setNum, int 
 			//no memory use, cacheshare++, miss++
 			(*tempLine).setState(CacheLine::owned);
 			(*stats).numCacheShare++;
-			result = Cache::MODIFIED;
+			result = BusResponse::MODIFIED;
 			return result;
 		}
 		else if ((*tempLine).getState() == CacheLine::shared){
 			//we don't give anything to the req cache cause not our job
 			//they have to go to main memory
-			result = Cache::SHARED;
+			result = BusResponse::SHARED;
 			return result;
 		} else if((*tempLine).getState() == CacheLine::exclusive){
 			//change to shared, share the data
-			result = Cache::EXCLUSIVE;
+			result = BusResponse::EXCLUSIVE;
 			(*tempLine).setState(CacheLine::shared);
 			(*stats).numCacheShare++;
 			return result;
@@ -457,19 +460,19 @@ Cache::SnoopResult Cache::handleSnoopMOESI(BusRequest* request, int setNum, int 
 	}
 	if((*request).getCommand() == BusRequest::BusRdX){
 		if((*tempLine).getState() == CacheLine::owned){
-			result = Cache::OWNED;
+			result = BusResponse::OWNED;
 			(*stats).numCacheShare++;
 			(*tempLine).setState(CacheLine::invalid);
 			return result;
 		} else if((*tempLine).getState() == CacheLine::modified){
 			//we only flush when evicted
-			result = Cache::MODIFIED; //there is no flush, but can share the data
+			result = BusResponse::MODIFIED; //there is no flush, but can share the data
 			(*stats).numCacheShare++;
 			(*tempLine).setState(CacheLine::invalid);
 			return result;
 		}
 		else if  ((*tempLine).getState() == CacheLine::exclusive){
-			result = Cache::EXCLUSIVE;
+			result = BusResponse::EXCLUSIVE;
 			(*stats).numCacheShare++;
 			(*tempLine).setState(CacheLine::invalid);
 			return result;
@@ -489,9 +492,9 @@ Cache::SnoopResult Cache::handleSnoopMOESI(BusRequest* request, int setNum, int 
 Read the current BusRequest that another cache issued to the bus
 and parse it to see if you need to update our own local cache
 */
-Cache::SnoopResult Cache::snoopBusRequest(BusRequest* request){
+BusResponse::SnoopResult Cache::snoopBusRequest(BusRequest* request){
 
-	SnoopResult result = Cache::NONE;
+	BusResponse::SnoopResult result = BusResponse::NONE;
 	CacheSet* tempSet = localCache[(*request).getSet()];
 	int setNum = (*request).getSet();
 	int tagNum = (*request).getTag();
@@ -499,29 +502,29 @@ Cache::SnoopResult Cache::snoopBusRequest(BusRequest* request){
 		//so we do have this line
 		CacheLine* tempLine = (*tempSet).getLine((*request).getTag());
 		if(cacheConstants.getProtocol() == CacheConstants::MESI){
-			SnoopResult result = handleSnoopMESI(request, setNum, tagNum, tempLine);
+			BusResponse::SnoopResult result = handleSnoopMESI(request, setNum, tagNum, tempLine);
 			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
-			responseQueue.push_back(busRequest);
+			responseQueue.push_back(busResponse);
 			return result;
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MSI){
-			SnoopResult result = handleSnoopMSI(request, setNum, tagNum, tempLine);
+			BusResponse::SnoopResult result = handleSnoopMSI(request, setNum, tagNum, tempLine);
 			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
-			responseQueue.push_back(busRequest);
+			responseQueue.push_back(busResponse);
 			return result;
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MOESI){
-			SnoopResult result= handleSnoopMOESI(request, setNum, tagNum, tempLine);
+			BusResponse::SnoopResult result= handleSnoopMOESI(request, setNum, tagNum, tempLine);
 			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
-			responseQueue.push_back(busRequest);
+			responseQueue.push_back(busResponse);
 			return result;
 		}
 	}
 
 	busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
-	responseQueue.push_back(busRequest);
+	responseQueue.push_back(busResponse);
 	return result;
 }
 

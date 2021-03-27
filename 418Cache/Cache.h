@@ -38,7 +38,7 @@ public:
 	CacheLine::State currentBusJobResultState;
 
 	void updateEndCycleTime(unsigned long long);
-	typedef enum {SHARED, FLUSH_MODIFIED_TO_SHARED,FLUSH_MODIFIED_TO_INVALID, EXCLUSIVE, OWNED, MODIFIED, NONE} SnoopResult;	 
+	//typedef enum {SHARED, FLUSH_MODIFIED_TO_SHARED,FLUSH_MODIFIED_TO_INVALID, EXCLUSIVE, OWNED, MODIFIED, NONE} SnoopResult;	 
 	Cache(int, CacheConstants,std::queue<CacheJob*>*, CacheStats*);
 	int getProcessorId();
 	void setPId(int);
@@ -55,7 +55,7 @@ public:
 	BusRequest* getBusRequest();
 	std::vector<BusRequest*> getBusRequestQueue();
 	std::vector<BusResponse*> getBusResponseQueue();
-	Cache::SnoopResult snoopBusRequest(BusRequest*);
+	BusResponse::SnoopResult snoopBusRequest(BusRequest*);
 	void newEndCycleTime(unsigned long long);
 	~Cache(void);
 private:
@@ -70,19 +70,19 @@ private:
 	void handleWriteSharedInvalid();
 	bool handleReadHit();
 	void handleReadMiss();
-	Cache::SnoopResult handleSnoopMESI(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleSnoopMSI(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleSnoopMOESI(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdShared(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdModified(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdInvalid(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdXInvalid(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdXModified(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdXSharedExclusive(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdXMESI(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdMESI(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdXMSI(BusRequest*, int, int, CacheLine*);
-	Cache::SnoopResult handleBusRdMSI(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleSnoopMESI(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleSnoopMSI(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleSnoopMOESI(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdShared(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdModified(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdInvalid(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdXInvalid(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdXModified(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdXSharedExclusive(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdXMESI(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdMESI(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdXMSI(BusRequest*, int, int, CacheLine*);
+	BusResponse::SnoopResult handleBusRdMSI(BusRequest*, int, int, CacheLine*);
 
 };
 
