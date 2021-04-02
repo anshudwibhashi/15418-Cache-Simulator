@@ -58,6 +58,7 @@ public:
 	void snoopBusRequest(BusRequest*);
 	void processBusRequest(BusRequest*);
 	void newEndCycleTime(unsigned long long);
+	BusResponse* getResponseForSender(int);
 	~Cache(void);
 private:
 

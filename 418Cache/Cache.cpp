@@ -304,7 +304,7 @@ bool Cache::hasBusRequest(){
 
 //return the current busRequest 
 BusRequest* Cache::getBusRequest(){
-	printf("cache %d got able to put out a bus request for address %llx at cycle %llu \n", 		processorId, (*currentJob).getAddress(), cacheConstants.getCycle());
+	// printf("cache %d got able to put out a bus request for address %llx at cycle %llu \n", 		processorId, (*currentJob).getAddress(), cacheConstants.getCycle());
 	startServiceCycle = cacheConstants.getCycle();
 	busRequestBeingServiced = true;
 	return busRequest;
@@ -494,7 +494,19 @@ Read the current BusRequest that another cache issued to the bus
 and parse it to see if you need to update our own local cache
 */
 void Cache::snoopBusRequest(BusRequest* request){
-	// TODO: Add request to queue
+	requestQueue.push_back(request);
+}
+
+BusResponse* Cache::getResponseForSender(int senderId) {
+	for(std::vector<BusResponse*>::iterator it = responseQueue.begin(); it != responseQueue.end(); ++it) {
+		if ((*it)->getSenderId() == senderId) {
+			BusResponse* result = *it;
+			responseQueue.erase(it);
+			return result;
+		}
+	}
+
+	return NULL;
 }
 
 /*
@@ -578,8 +590,7 @@ void Cache::busJobDone(bool isShared){
 			(*stats).numCacheShare++;
 			printf("~~~~~~~ share++ \n");
 		}
-		else if( cacheConstants.getProtocol() == CacheConstants::MSI){
-			//msi protocol, we had to read from memory
+		else if(!isShared && cacheConstants.getProtocol() == CacheConstants::MSI){
 			(*stats).numMainMemoryUses++;
 			printf("~~~~~~~~~~~~ mem use ++ \n");
 		}
@@ -619,7 +630,7 @@ void Cache::busJobDone(bool isShared){
 					processorId, (*currentJob).getAddress(), cacheConstants.getCycle());
 			}
 		}
-		if(cacheConstants.getProtocol() == CacheConstants::MSI){
+		if(!isShared && cacheConstants.getProtocol() == CacheConstants::MSI){
 			(*stats).numMainMemoryUses++;
 			printf("mem++ ~~~~~~~~~~~~~~~ \n");
 			(*currLine).setState(CacheLine::shared);
@@ -667,6 +678,7 @@ void Cache::tick(){
 
 	if(startServiceCycle + jobCycleCost <= cacheConstants.getCycle()){
 		//finished a job
+		if (haveBusRequest) {busJobDone(false);}
 		updateCurrentJobLineCycle();
 		busy = false;
 	}

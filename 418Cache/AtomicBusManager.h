@@ -13,6 +13,7 @@ public:
 	int currentCache;
 	//current bus request being served
 	BusRequest* currentRequest;
+	BusResponse* currentResponse;
 	bool inUse;
 	//which cycle we started a job on
 	unsigned long long startCycle; 
@@ -28,6 +29,9 @@ public:
 	CacheStats* stats;
 	int propagationDelay;
 	void tick(void);
+	void handleBusResponse(BusResponse*);
 	~AtomicBusManager(void);
+	std::vector<unsigned long long> outstandingRequestsFromA;
+	std::vector<unsigned long long> outstandingRequestsFromB;
 };
 
