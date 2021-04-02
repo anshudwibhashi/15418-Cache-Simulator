@@ -306,7 +306,7 @@ bool Cache::hasBusRequest(){
 BusRequest* Cache::getBusRequest(){
 	// printf("cache %d got able to put out a bus request for address %llx at cycle %llu \n", 		processorId, (*currentJob).getAddress(), cacheConstants.getCycle());
 	startServiceCycle = cacheConstants.getCycle();
-	busRequestBeingServiced = true;
+	// busRequestBeingServiced = true;
 	return busRequest;
 }
 
@@ -494,19 +494,26 @@ Read the current BusRequest that another cache issued to the bus
 and parse it to see if you need to update our own local cache
 */
 void Cache::snoopBusRequest(BusRequest* request){
+	printf("snoopBusRequest called with %p\n", request);
 	requestQueue.push_back(request);
 }
 
+#include <algorithm>
+
 BusResponse* Cache::getResponseForSender(int senderId) {
+	BusResponse* result = NULL;
+
+	int index = 0;
 	for(std::vector<BusResponse*>::iterator it = responseQueue.begin(); it != responseQueue.end(); ++it) {
 		if ((*it)->getSenderId() == senderId) {
-			BusResponse* result = *it;
-			responseQueue.erase(it);
-			return result;
+			result = *it;
+			responseQueue.erase(responseQueue.begin() + index);
+			break;
 		}
+		index++;
 	}
 
-	return NULL;
+	return result;
 }
 
 /*
@@ -670,10 +677,14 @@ std::vector<BusResponse*> Cache::getBusResponseQueue(){
 
 void Cache::tick(){
 
-	if(busRequestBeingServiced){
-		return; 
-		//we have to wait for the bus to tell us we're done, not our own selves saying it
-		//since cache time incremented before bus time
+	for(std::vector<BusRequest*>::iterator it = requestQueue.begin(); it != requestQueue.end(); ) {
+		if ((*it)->getOrderingTime() <= getGuaranteeTime()) {
+			BusRequest* request = *it;
+			it = requestQueue.erase(it);
+			processBusRequest(request);
+			continue;
+		}
+		++it;
 	}
 
 	if(startServiceCycle + jobCycleCost <= cacheConstants.getCycle()){

@@ -57,7 +57,13 @@ void AtomicBusManager::tick(){
 			if (currentResponse != NULL) {
 				handleBusResponse(currentResponse);
 
-				if (isShared) { (*caches.at(currentCache)).busJobDone(isShared); }
+				if (isShared) {
+					Cache* concernedCache = caches.at(0);
+					if (concernedCache->getProcessorId() != currentResponse->getSenderId()) {
+						concernedCache = caches.at(1);
+					}
+					concernedCache->busJobDone(isShared);
+				}
 				currentResponse = NULL;
 			}
 			currentCache = -1;
@@ -109,7 +115,7 @@ void AtomicBusManager::tick(){
 		isShared = false;
 		return;
 	}
-
+	
 	currentCache = tempNextCache;
 	printf("now servicing cache %d on the bus at cycle %llu \n", (*caches.at(currentCache)).getProcessorId(), constants.getCycle());
 	(*stats).numBusRequests++;
