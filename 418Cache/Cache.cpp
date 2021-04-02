@@ -504,27 +504,27 @@ BusResponse::SnoopResult Cache::snoopBusRequest(BusRequest* request){
 		CacheLine* tempLine = (*tempSet).getLine((*request).getTag());
 		if(cacheConstants.getProtocol() == CacheConstants::MESI){
 			BusResponse::SnoopResult result = handleSnoopMESI(request, setNum, tagNum, tempLine);
-			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
+			busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
 			responseQueue.push_back(busResponse);
 			return result;
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MSI){
 			BusResponse::SnoopResult result = handleSnoopMSI(request, setNum, tagNum, tempLine);
-			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
+			busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
 			responseQueue.push_back(busResponse);
 			return result;
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MOESI){
 			BusResponse::SnoopResult result= handleSnoopMOESI(request, setNum, tagNum, tempLine);
-			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
+			busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
 			responseQueue.push_back(busResponse);
 			return result;
 		}
 	}
 
-	busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
+	busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
 	responseQueue.push_back(busResponse);
 	return result;
 }

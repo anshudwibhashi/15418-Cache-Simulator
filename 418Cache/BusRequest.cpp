@@ -1,7 +1,7 @@
 #include "BusRequest.h"
 
 
-BusRequest::BusRequest(BusRequest::BusMessage busCommand, int set, int tag, int jobCycleCost, unsigned long long adr, unsigned long long ordTime,int senderid){
+BusRequest::BusRequest(BusRequest::BusMessage busCommand, int set, int tag, int jobCycleCost, unsigned long long adr, unsigned long long ordTime, int senderid){
 	command = busCommand;
 	lineSet = set;
 	lineTag = tag;
