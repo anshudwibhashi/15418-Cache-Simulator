@@ -71,7 +71,8 @@ void AtomicBusManager::tick(){
 	for(int i = 0; i < 2; i++){
 		if(i != currentCache){
 			// Add the busResponse 
-			BusResponse::SnoopResult result = (*caches.at(i)).snoopBusRequest(currentRequest);
+			(*caches.at(i)).snoopBusRequest(currentRequest);
+			BusResponse::SnoopResult result = BusResponse::NONE; // TODO: Move this logic into separate function
 			if(constants.getProtocol() == CacheConstants::MSI){
 				if (result == BusResponse::FLUSH_MODIFIED_TO_SHARED || result == BusResponse::FLUSH_MODIFIED_TO_INVALID)
 				{

@@ -55,7 +55,8 @@ public:
 	BusRequest* getBusRequest();
 	std::vector<BusRequest*> getBusRequestQueue();
 	std::vector<BusResponse*> getBusResponseQueue();
-	BusResponse::SnoopResult snoopBusRequest(BusRequest*);
+	void snoopBusRequest(BusRequest*);
+	void processBusRequest(BusRequest*);
 	void newEndCycleTime(unsigned long long);
 	~Cache(void);
 private:

@@ -493,40 +493,35 @@ BusResponse::SnoopResult Cache::handleSnoopMOESI(BusRequest* request, int setNum
 Read the current BusRequest that another cache issued to the bus
 and parse it to see if you need to update our own local cache
 */
-BusResponse::SnoopResult Cache::snoopBusRequest(BusRequest* request){
+void Cache::snoopBusRequest(BusRequest* request){
+	// TODO: Add request to queue
+}
 
+/*
+This function will be called whenever a request's OT <= GT and we'll add the response to the queue
+*/
+void Cache::processBusRequest(BusRequest* request) {
 	BusResponse::SnoopResult result = BusResponse::NONE;
 	CacheSet* tempSet = localCache[(*request).getSet()];
 	int setNum = (*request).getSet();
 	int tagNum = (*request).getTag();
 	if((*tempSet).hasLine((*request).getTag())){
-		//so we do have this line
 		CacheLine* tempLine = (*tempSet).getLine((*request).getTag());
 		if(cacheConstants.getProtocol() == CacheConstants::MESI){
 			BusResponse::SnoopResult result = handleSnoopMESI(request, setNum, tagNum, tempLine);
-			busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
-			responseQueue.push_back(busResponse);
-			return result;
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MSI){
 			BusResponse::SnoopResult result = handleSnoopMSI(request, setNum, tagNum, tempLine);
-			busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
-			responseQueue.push_back(busResponse);
-			return result;
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MOESI){
-			BusResponse::SnoopResult result= handleSnoopMOESI(request, setNum, tagNum, tempLine);
-			busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
-			responseQueue.push_back(busResponse);
-			return result;
+			BusResponse::SnoopResult result = handleSnoopMOESI(request, setNum, tagNum, tempLine);
 		}
 	}
 
 	busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
 	responseQueue.push_back(busResponse);
-	return result;
 }
 
 void Cache::updateEndCycleTime(unsigned long long extraCycleCost){
