@@ -71,10 +71,9 @@ unsigned long long Cache::getTotalMemoryCost(int set, int tag)
 	}
 	return result;
 }
-unsigned long long Cache::getOrderingTime(){
-	// ordering time = source guarantee time + 2 * worst case propagation delay
-	unsigned long long result = cacheConstants.getCycle() + 2 * cacheConstants.getPropagationDelayRectDiagonal();	
-	return result;
+
+unsigned long long Cache::getGuaranteeTime(){
+	return cacheConstants.getCycle() - 2 * cacheConstants.getPropagationDelayRectDiagonal();
 }
 
 /*
@@ -148,7 +147,8 @@ void Cache::handleWriteSharedInvalid(){
 	//the cycle cost can be changed for different protocols and such
 	unsigned long long memoryCost = getTotalMemoryCost(set, tag);
 	(*stats).numMiss++;
-	busRequest = new BusRequest(BusRequest::BusRdX, set, tag, memoryCost, (*currentJob).getAddress(), getOrderingTime(),processorId);
+	busRequest = new BusRequest(BusRequest::BusRdX, set, tag,
+		memoryCost, (*currentJob).getAddress(), cacheConstants.getCycle(), processorId);
 	jobCycleCost = memoryCost;
 	printf("cache %d just got a cache MISS(or was SHARED) on a PrWr request for address %llx at cycle %llu \n", processorId, (*currentJob).getAddress(), cacheConstants.getCycle());
 
@@ -198,7 +198,8 @@ void Cache::handleReadMiss(){
 	int set = 0;
 	int tag = 0;
 	decode_address((*currentJob).getAddress(), &set, &tag);
-	busRequest = new BusRequest(BusRequest::BusRd, set, tag, cacheConstants.getMemoryResponseCycleCost(), (*currentJob).getAddress(), getOrderingTime(),processorId);
+	busRequest = new BusRequest(BusRequest::BusRd, set, tag,
+		cacheConstants.getMemoryResponseCycleCost(), (*currentJob).getAddress(), cacheConstants.getCycle(), processorId);
 	jobCycleCost = cacheConstants.getMemoryResponseCycleCost();
 	(*stats).numMiss++;
 	printf("cache %d just got a cache MISS on a PrRd request for address %llx at cycle %llu \n",		processorId, (*currentJob).getAddress(), cacheConstants.getCycle());
@@ -263,8 +264,8 @@ void Cache::handleRequest(){
 						//its a hit
 						unsigned long long memoryCost = cacheConstants.getCacheHitCycleCost();
 						(*stats).numHit++;
-						busRequest = new BusRequest(BusRequest::BusRdX, set, tag,	memoryCost, (*currentJob).getAddress(),getOrderingTime(),processorId);
-						
+						busRequest = new BusRequest(BusRequest::BusRdX, set, tag,
+							memoryCost, (*currentJob).getAddress(), cacheConstants.getCycle(), processorId);
 						jobCycleCost = cacheConstants.getCacheHitCycleCost();
 						setLineState(CacheLine::modified);
 						return;

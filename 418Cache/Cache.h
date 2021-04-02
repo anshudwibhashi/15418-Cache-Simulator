@@ -48,7 +48,7 @@ public:
 	bool hasBusRequest();
 	void decode_address(unsigned long long address, int* whichSet, int* tag);
 	unsigned long long getTotalMemoryCost(int set, int tag);
-	unsigned long long getOrderingTime();
+	unsigned long long getGuaranteeTime();
 	bool lineInState(CacheLine::State state);
 	void setLineState(CacheLine::State state);
 	void updateCurrentJobLineCycle();

@@ -57,7 +57,7 @@ void AtomicBusManager::tick(){
 		return;
 	}
 	currentCache = tempNextCache;
-	printf("now servicing cache %d on the bus at cycle %llu \n", currentCache, constants.getCycle());
+	printf("now servicing cache %d on the bus at cycle %llu \n", (*caches.at(currentCache)).getProcessorId(), constants.getCycle());
 	(*stats).numBusRequests++;
 	//since only get here if we got a new job
 	//update the startCycle for when we just changed jobs
