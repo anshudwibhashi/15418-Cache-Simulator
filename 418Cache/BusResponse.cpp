@@ -1,7 +1,7 @@
 #include "BusResponse.h"
 
-BusResponse::BusResponse(SnoopResult result, unsigned long long ordtime, int senderid){
-    result = result;
+BusResponse::BusResponse(SnoopResult res, unsigned long long ordtime, int senderid){
+    result = res;
     ordTime = ordtime;
     senderId = senderid;
 }

@@ -305,8 +305,8 @@ bool Cache::hasBusRequest(){
 //return the current busRequest 
 BusRequest* Cache::getBusRequest(){
 	// printf("cache %d got able to put out a bus request for address %llx at cycle %llu \n", 		processorId, (*currentJob).getAddress(), cacheConstants.getCycle());
-	startServiceCycle = cacheConstants.getCycle();
-	// busRequestBeingServiced = true;
+	if(!busRequestBeingServiced) { startServiceCycle = cacheConstants.getCycle(); }
+	busRequestBeingServiced = true;
 	return busRequest;
 }
 
@@ -540,6 +540,7 @@ void Cache::processBusRequest(BusRequest* request) {
 	}
 
 	busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
+	printf("returning reslt typ %d\n", result);
 	responseQueue.push_back(busResponse);
 }
 
@@ -557,6 +558,7 @@ void Cache::newEndCycleTime(unsigned long long decrease){
 Update to store the new line requested
 */
 void Cache::busJobDone(bool isShared){
+	printf(isShared ? "job done found shared\n": "job done didn't find shared\n");
 	unsigned long long jobAddr = (*currentJob).getAddress();
 	int currJobSet = 0;
 	int currJobTag = 0;
@@ -596,6 +598,8 @@ void Cache::busJobDone(bool isShared){
 		else if(isShared && cacheConstants.getProtocol() == CacheConstants::MESI){
 			(*stats).numCacheShare++;
 			printf("~~~~~~~ share++ \n");
+		} else if (cacheConstants.getProtocol() == CacheConstants::MESI) {
+			(*stats).numMainMemoryUses++;
 		}
 		else if(!isShared && cacheConstants.getProtocol() == CacheConstants::MSI){
 			(*stats).numMainMemoryUses++;

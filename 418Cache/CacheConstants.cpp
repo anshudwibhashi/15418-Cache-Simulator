@@ -48,7 +48,7 @@ CacheConstants::CacheConstants(void)
 	numCacheSize = (numSets * numLinesInSet * numBytesInLine); //~32k
 	numAddressBits = 48;
 	cycles = 0;
-	protocol = CacheConstants::MESI;
+	protocol = CacheConstants::MOESI;
 }
 
 int CacheConstants::getPropagationDelayRectLength(){

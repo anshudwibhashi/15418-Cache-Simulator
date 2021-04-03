@@ -6,7 +6,7 @@ class BusResponse{
         SnoopResult result;
         unsigned long long ordTime;
         int senderId;
-        BusResponse(SnoopResult result, unsigned long long ordtime, int senderid);
+        BusResponse(SnoopResult, unsigned long long, int);
         unsigned long long getOrdTime();
         int getSenderId();
         SnoopResult getResult();
