@@ -681,14 +681,33 @@ std::vector<BusResponse*> Cache::getBusResponseQueue(){
 
 void Cache::tick(){
 
+	std::vector<BusRequest*> candidateRequests;
 	for(std::vector<BusRequest*>::iterator it = requestQueue.begin(); it != requestQueue.end(); ) {
 		if ((*it)->getOrderingTime() <= getGuaranteeTime()) {
 			BusRequest* request = *it;
 			it = requestQueue.erase(it);
-			processBusRequest(request);
+			candidateRequests.push_back(request);
 			continue;
 		}
 		++it;
+	}
+
+	while(candidateRequests.size() > 0) {
+		long long smallestOT = getGuaranteeTime() + 1;
+		BusRequest* currentSmallestOTRequest = NULL;
+		int smallestOTIndex = 0;
+		int index = 0;
+		for(std::vector<BusRequest*>::iterator it = candidateRequests.begin(); it != candidateRequests.end(); ) {
+			if ((*it)->getOrderingTime() <= smallestOT) {
+				smallestOT = (*it)->getOrderingTime();
+				currentSmallestOTRequest = *it;
+				smallestOTIndex = index;
+			}
+			index++;
+			++it;
+		}
+		processBusRequest(currentSmallestOTRequest);
+		candidateRequests.erase(candidateRequests.begin() + smallestOTIndex);
 	}
 
 	if(startServiceCycle + jobCycleCost <= cacheConstants.getCycle()){
