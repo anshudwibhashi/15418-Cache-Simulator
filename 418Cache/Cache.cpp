@@ -414,7 +414,6 @@ BusResponse::SnoopResult Cache::handleBusRdMSI(BusRequest* request, int setNum, 
 }
 
 BusResponse::SnoopResult Cache::handleSnoopMSI(BusRequest* request, int setNum, int tagNum, CacheLine* tempLine){
-	BusResponse::SnoopResult result = BusResponse::NONE;
 	if((*request).getCommand() == BusRequest::BusRd){
 		return handleBusRdMSI(request, setNum, tagNum, tempLine);
 	}
@@ -502,21 +501,21 @@ BusResponse::SnoopResult Cache::snoopBusRequest(BusRequest* request){
 		//so we do have this line
 		CacheLine* tempLine = (*tempSet).getLine((*request).getTag());
 		if(cacheConstants.getProtocol() == CacheConstants::MESI){
-			BusResponse::SnoopResult result = handleSnoopMESI(request, setNum, tagNum, tempLine);
+			result = handleSnoopMESI(request, setNum, tagNum, tempLine);
 			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
 			responseQueue.push_back(busResponse);
 			return result;
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MSI){
-			BusResponse::SnoopResult result = handleSnoopMSI(request, setNum, tagNum, tempLine);
+			result = handleSnoopMSI(request, setNum, tagNum, tempLine);
 			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
 			responseQueue.push_back(busResponse);
 			return result;
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MOESI){
-			BusResponse::SnoopResult result= handleSnoopMOESI(request, setNum, tagNum, tempLine);
+			result = handleSnoopMOESI(request, setNum, tagNum, tempLine);
 			busResponse = new BusResponse(result, (*busRequest).getOrderingTime(),(*busRequest).getSenderId());
 			responseQueue.push_back(busResponse);
 			return result;
