@@ -1,0 +1,19 @@
+R 0x106074800 0
+//From invalid to exclusive
+R 0x106074800 0 
+//Exclusive to exclusive
+W 0x106074800 0 
+//Exclusive to modified
+R 0x106074800 0 
+//Modified to modified
+W 0x106074800 0 
+//Modified to modified
+R 0x106074800 1
+//Modified to owned and transfer (for processor 0)
+//Should now be in shared for processor 1
+R 0x106074800 1
+//Owned to Owned (processor 0)
+//Shared to shared (processor 1)
+W 0x106074800 1
+//Owned to invalid (for processor 0)
+//Shared to modified for processor 1

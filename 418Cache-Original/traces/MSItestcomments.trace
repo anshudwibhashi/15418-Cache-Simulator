@@ -1,0 +1,26 @@
+R 0x7fff90120 0
+R 0x6fff90120 0
+R 0x6fff90120 0
+R 0x6fff90120 0
+R 0x5fff90120 0
+R 0x7fff90120 0
+//Above tests eviction
+R 0x106074800 0
+//From invalid to shared
+R 0x106074800 0 
+//Shared to shared
+W 0x106074800 0 
+//Shared to modified
+R 0x106074800 0 
+//Modified to modified
+W 0x106074800 0 
+//Modified to modified
+R 0x106074800 1
+//Modified to shared and flush to memory (for processor 0)
+//Should now be in shared for processor 1
+W 0x106074800 1
+//Shared to invalid and no flush to memory (for processor 0)
+//Should now be in modified for processor 1
+W 0x106074800 0
+//Modified to invalid and flush to memory (for processor 1)
+//Invalid to modified (for processor 0)
