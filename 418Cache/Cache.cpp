@@ -494,7 +494,6 @@ Read the current BusRequest that another cache issued to the bus
 and parse it to see if you need to update our own local cache
 */
 void Cache::snoopBusRequest(BusRequest* request){
-	printf("snoopBusRequest called with %p\n", request);
 	requestQueue.push_back(request);
 }
 
@@ -527,20 +526,19 @@ void Cache::processBusRequest(BusRequest* request) {
 	if((*tempSet).hasLine((*request).getTag())){
 		CacheLine* tempLine = (*tempSet).getLine((*request).getTag());
 		if(cacheConstants.getProtocol() == CacheConstants::MESI){
-			BusResponse::SnoopResult result = handleSnoopMESI(request, setNum, tagNum, tempLine);
+			result = handleSnoopMESI(request, setNum, tagNum, tempLine);
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MSI){
-			BusResponse::SnoopResult result = handleSnoopMSI(request, setNum, tagNum, tempLine);
+			result = handleSnoopMSI(request, setNum, tagNum, tempLine);
 		}
 
 		if(cacheConstants.getProtocol() == CacheConstants::MOESI){
-			BusResponse::SnoopResult result = handleSnoopMOESI(request, setNum, tagNum, tempLine);
+			result = handleSnoopMOESI(request, setNum, tagNum, tempLine);
 		}
 	}
 
 	busResponse = new BusResponse(result, request->getOrderingTime(), request->getSenderId());
-	printf("returning reslt typ %d\n", result);
 	responseQueue.push_back(busResponse);
 }
 
@@ -558,7 +556,6 @@ void Cache::newEndCycleTime(unsigned long long decrease){
 Update to store the new line requested
 */
 void Cache::busJobDone(bool isShared){
-	printf(isShared ? "job done found shared\n": "job done didn't find shared\n");
 	unsigned long long jobAddr = (*currentJob).getAddress();
 	int currJobSet = 0;
 	int currJobTag = 0;
@@ -602,8 +599,12 @@ void Cache::busJobDone(bool isShared){
 			(*stats).numMainMemoryUses++;
 		}
 		else if(!isShared && cacheConstants.getProtocol() == CacheConstants::MSI){
+			(*currLine).setState(CacheLine::modified);
 			(*stats).numMainMemoryUses++;
 			printf("~~~~~~~~~~~~ mem use ++ \n");
+		} else if (cacheConstants.getProtocol() == CacheConstants::MSI) {
+			(*currLine).setState(CacheLine::modified);
+			(*stats).numCacheShare++;
 		}
 		else{
 		}
@@ -647,6 +648,9 @@ void Cache::busJobDone(bool isShared){
 			(*currLine).setState(CacheLine::shared);
 			printf("cache %d has just been told it has finished a job for address %llx and stored in shared state at cycle %llu \n", 
 				processorId, (*currentJob).getAddress(), cacheConstants.getCycle());
+		} else if (cacheConstants.getProtocol() == CacheConstants::MSI) {
+			(*currLine).setState(CacheLine::shared);
+			(*stats).numCacheShare++;
 		}
 	}
 }

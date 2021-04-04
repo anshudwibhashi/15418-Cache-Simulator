@@ -62,7 +62,6 @@ void AtomicBusManager::tick(){
 					if (concernedCache->getProcessorId() != currentResponse->getSenderId()) {
 						concernedCache = caches.at(1);
 					}
-					printf("Calling concerned cache w %d \n", currentResponse->getResult());
 					concernedCache->busJobDone(isShared);
 				}
 				currentResponse = NULL;

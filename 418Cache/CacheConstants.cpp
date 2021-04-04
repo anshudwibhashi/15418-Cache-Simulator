@@ -35,16 +35,16 @@ CacheConstants::Protocol protocol; //string representing what the protocol is
 CacheConstants::CacheConstants(void)
 {
 	cacheHitCycleCost = 4;
-	memoryResponseCycleCost = 100;
+	memoryResponseCycleCost = 1000;
 	propagationDelayRectLength = 20; 
 	propagationDelayRectWidth = 21;
 	propagationDelayRectDiagonal = 29;
 	numProcessors = 4;
-	numSets = 64;  //totalCacheSize / (numLinesInSet * (numBytesInLine));
-	numSetBits = 6; //2^ 6 = 64
-	numLinesInSet = 8; //8 way associative
-	numBytesInLine = 64; //64 bytes per line
-	numBytesBits = 6; // 2^6 == 64
+	numSets = 2;  //totalCacheSize / (numLinesInSet * (numBytesInLine));
+	numSetBits = 1; //2^ 6 = 64
+	numLinesInSet = 2; //8 way associative
+	numBytesInLine = 8; //64 bytes per line
+	numBytesBits = 3; // 2^6 == 64
 	numCacheSize = (numSets * numLinesInSet * numBytesInLine); //~32k
 	numAddressBits = 48;
 	cycles = 0;
