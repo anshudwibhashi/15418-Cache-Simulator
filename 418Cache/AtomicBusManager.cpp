@@ -23,7 +23,7 @@ AtomicBusManager::AtomicBusManager(CacheConstants consts, std::vector<Cache*>* a
 void AtomicBusManager::handleBusResponse(BusResponse* response){
 	BusResponse::SnoopResult result = response->getResult();
 	if(constants.getProtocol() == CacheConstants::MSI){
-		if (result == BusResponse::FLUSH_MODIFIED_TO_SHARED || result == BusResponse::FLUSH_MODIFIED_TO_INVALID)
+		if (result == BusResponse::FLUSH_MODIFIED_TO_SHARED || result == BusResponse::FLUSH_MODIFIED_TO_INVALID || result == BusResponse::SHARED)
 		{
 			isShared = true;
 		}
