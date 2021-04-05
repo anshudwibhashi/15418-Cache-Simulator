@@ -131,8 +131,8 @@ int main(int argc, char* argv[]){
 		(*bus34).tick();
 	}
 
-	printf("finished at cycle %llu \n", constants.getCycle());
-	printf("num hits: %llu num miss: %llu num flush: %llu num evicts: %llu num bus request: %llu num shares: %llu num Ex2Mod: %llu, num main memory use: %llu \n", 
+	fprintf(stderr, "finished at cycle %llu \n", constants.getCycle());
+	fprintf(stderr, "num hits: %llu num miss: %llu num flush: %llu num evicts: %llu num bus request: %llu num shares: %llu num Ex2Mod: %llu, num main memory use: %llu \n", 
 		(*stats).numHit, (*stats).numMiss, (*stats).numFlush, (*stats).numEvict, (*stats).numBusRequests, (*stats).numCacheShare, (*stats).numExclusiveToModifiedTransitions, (*stats).numMainMemoryUses);
 
 	for(int i = 0; i < numProcessors; i++){
